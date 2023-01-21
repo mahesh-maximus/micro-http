@@ -373,7 +373,7 @@ pub enum MediaType {
     PlainText,
     /// Media Type: "application/json".
     ApplicationJson,
-    /// Media Type: "text/html"
+    /// Media Type: "text/html".
     TextHtml,    
 }
 
