@@ -373,6 +373,8 @@ pub enum MediaType {
     PlainText,
     /// Media Type: "application/json".
     ApplicationJson,
+    /// Media Type: "text/html"
+    TextHtml,    
 }
 
 impl Default for MediaType {
@@ -425,6 +427,7 @@ impl MediaType {
         match self {
             Self::PlainText => "text/plain",
             Self::ApplicationJson => "application/json",
+            Self::TextHtml => "text/html",
         }
     }
 }
