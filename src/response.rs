@@ -81,6 +81,23 @@ impl StatusLine {
     }
 }
 
+/// TODO
+#[derive(Debug, PartialEq, Eq)]
+pub struct Cookie {
+    name: String,
+    value: String,
+}
+
+impl Cookie {
+    /// TODO
+    pub fn new (name: String, value: String) -> Self {
+        Self {
+            name,
+            value
+        }
+    }
+}
+
 /// Wrapper over the list of headers associated with a HTTP Response.
 /// When creating a ResponseHeaders object, the content type is initialized to `text/plain`.
 /// The content type can be updated with a call to `set_content_type`.
@@ -92,6 +109,7 @@ pub struct ResponseHeaders {
     server: String,
     allow: Vec<Method>,
     accept_encoding: bool,
+    cookie: Vec<Cookie>,
 }
 
 impl Default for ResponseHeaders {
@@ -103,6 +121,7 @@ impl Default for ResponseHeaders {
             server: String::from("Firecracker API"),
             allow: Vec::new(),
             accept_encoding: false,
+            cookie: Vec::new(),
         }
     }
 }
@@ -138,6 +157,24 @@ impl ResponseHeaders {
         buf.write_all(&[CR, LF])
     }
 
+    // The logic pertaining to `Set-Coockie` header writing.
+    fn write_coockie_header<T: Write>(&self, buf: &mut T) -> Result<(), WriteError> {
+        if self.cookie.is_empty() {
+            return Ok(());
+        }
+
+        let equals = b"=";
+        for (_idx, cookie) in self.cookie.iter().enumerate() {
+            buf.write_all(b"Set-Cookie: ")?;
+            buf.write_all(cookie.name.as_bytes())?;
+            buf.write_all(equals)?;
+            buf.write_all(cookie.value.as_bytes())?;
+            buf.write_all(&[CR, LF])?;
+        }
+
+        Ok(())
+    }    
+
     /// Writes the headers to `buf` using the HTTP specification.
     pub fn write_all<T: Write>(&self, buf: &mut T) -> Result<(), WriteError> {
         buf.write_all(Header::Server.raw())?;
@@ -150,6 +187,7 @@ impl ResponseHeaders {
 
         self.write_allow_header(buf)?;
         self.write_deprecation_header(buf)?;
+        self.write_coockie_header(buf)?;
 
         if self.content_length != 0 {
             buf.write_all(Header::ContentType.raw())?;
@@ -262,6 +300,11 @@ impl Response {
     /// Allows a specific HTTP method.
     pub fn allow_method(&mut self, method: Method) {
         self.headers.allow.push(method);
+    }
+
+    /// Sets a new cookie.
+    pub fn set_cookie(&mut self, cookie: Cookie) {
+        self.headers.cookie.push(cookie);
     }
 
     fn write_body<T: Write>(&self, mut buf: T) -> Result<(), WriteError> {
