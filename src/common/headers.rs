@@ -95,6 +95,8 @@ pub struct Headers {
     /// `Accept` header might be used by HTTP clients to enforce server responses with content
     /// formatted in a specific way.
     accept: MediaType,
+    /// 'Content-Type` header can be used to indicate the original media type of the resource.
+    content_type: MediaType,    
     /// Hashmap reserved for storing custom headers.
     custom_entries: HashMap<String, String>,
 }
@@ -110,6 +112,7 @@ impl Default for Headers {
             // for structured and unstructured text.
             accept: MediaType::PlainText,
             custom_entries: HashMap::default(),
+            content_type: MediaType::PlainText
         }
     }
 }
@@ -164,7 +167,10 @@ impl Headers {
                         },
                         Header::ContentType => {
                             match MediaType::try_from(entry[1].trim().as_bytes()) {
-                                Ok(_) => Ok(()),
+                                Ok(content_type) => {
+                                    self.content_type = content_type;
+                                    Ok(())
+                                },
                                 Err(_) => Err(RequestError::HeaderError(
                                     HttpHeaderError::UnsupportedValue(
                                         entry[0].to_string(),
@@ -247,6 +253,11 @@ impl Headers {
     /// Returns the `Accept` header `MediaType`.
     pub fn accept(&self) -> MediaType {
         self.accept
+    }
+
+    /// Returns the `Content-Type` header `MediaType`.
+    pub fn content_type(&self) -> MediaType {
+        self.content_type
     }
 
     /// Parses a byte slice into a Headers structure for a HTTP request.
@@ -444,6 +455,7 @@ mod tests {
                 expect,
                 chunked,
                 accept: MediaType::PlainText,
+                content_type: MediaType::PlainText,
                 custom_entries: HashMap::default(),
             }
         }
