@@ -228,6 +228,8 @@ impl Body {
 pub enum Method {
     /// GET Method.
     Get,
+    /// POST Method.
+    Post,
     /// PUT Method.
     Put,
     /// PATCH Method.
@@ -245,6 +247,7 @@ impl Method {
     pub fn try_from(bytes: &[u8]) -> Result<Self, RequestError> {
         match bytes {
             b"GET" => Ok(Self::Get),
+            b"POST" => Ok(Self::Post),
             b"PUT" => Ok(Self::Put),
             b"PATCH" => Ok(Self::Patch),
             _ => Err(RequestError::InvalidHttpMethod("Unsupported HTTP method.")),
@@ -255,6 +258,7 @@ impl Method {
     pub fn raw(self) -> &'static [u8] {
         match self {
             Self::Get => b"GET",
+            Self::Post => b"POST",
             Self::Put => b"PUT",
             Self::Patch => b"PATCH",
         }
@@ -264,6 +268,7 @@ impl Method {
     pub fn to_str(self) -> &'static str {
         match self {
             Method::Get => "GET",
+            Method::Post => "POST",
             Method::Put => "PUT",
             Method::Patch => "PATCH",
         }
